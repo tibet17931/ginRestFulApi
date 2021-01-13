@@ -1,22 +1,39 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-type LoginCommand struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+// "ginRestFulApi/libs/common/common"
+type User struct {
+	Username string `json:"username" binding:"required,min=4,max=255"`
+	Name     string `json:"name" binding:"required"`
+	Password string `json:"password" binding:"required"`
 }
 
-func TestPost(c *gin.Context) {
+func TestPost(ctx *gin.Context) {
+	var user User
 
-	var loginCmd LoginCommand
+	if err := ctx.ShouldBindJSON(&user); err != nil {
+		fmt.Println(err)
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
 
-	c.BindJSON(&loginCmd)
-	c.JSON(http.StatusOK, gin.H{"status": 200, "data": loginCmd})
+	// fmt.Println(user)
+
+	// var loginCmd LoginCommand
+	// c.BindJSON(&loginCmd)
+
+	// fmt.Println(loginCmd)
+
+	ctx.JSON(http.StatusOK, gin.H{"status": 200, "data": user})
+	return
 }
 
 func ParamTest(c *gin.Context) {
