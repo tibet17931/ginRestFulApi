@@ -1,27 +1,47 @@
 package db
 
 import (
+	"context"
 	"ginRestFulApi/utils"
 	"log"
+	"time"
 
-	"github.com/goonode/mogo"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-var mongoConnection *mogo.Connection = nil
+var mongoConnection *mongo.Database = nil
 
 //GetConnection is for get mongo connection
-func GetConnection() *mogo.Connection {
+func GetConnection() *mongo.Database {
 	if mongoConnection == nil {
-		dbName := utils.EnvVar("DB_NAME", "")
-		config := &mogo.Config{
-			ConnectionString: "mongodb+srv://yeen:<password>@cluster0.tezwz.mongodb.net/" + dbName + "?retryWrites=true&w=majority",
-		}
-		mongoConnection, err := mogo.Connect(config)
+		dbUrl := utils.EnvVar("DB_URL", "")
+
+		// Database Config
+		clientOptions := options.Client().ApplyURI(dbUrl)
+		client, err := mongo.NewClient(clientOptions)
+
+		//Set up a context required by mongo.Connect
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+
+		err = client.Connect(ctx)
+
+		//Cancel context to avoid memory leak
+		defer cancel()
+
+		// Ping our db connection
+		err = client.Ping(context.Background(), readpref.Primary())
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("Couldn't connect to the database", err)
 		} else {
-			return mongoConnection
+			log.Println("Connected!")
 		}
+		// Connect to the database
+		mongoConnection := client.Database(utils.EnvVar("DB_NAME", ""))
+		return mongoConnection
 	}
+
 	return mongoConnection
+
 }

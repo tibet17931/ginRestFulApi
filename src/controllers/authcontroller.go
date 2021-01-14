@@ -1,46 +1,15 @@
 package controllers
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 
 	"ginRestFulApi/src/models/entity"
+	"ginRestFulApi/src/models/service"
 )
-
-// func Login(c *gin.Context) {
-
-// 	var loginInfo entity.User
-// 	if err := c.ShouldBindJSON(&loginInfo); err != nil {
-// 		c.AbortWithStatusJSON(400, gin.H{"error": err.Error()})
-// 		return
-// 	}
-// 	//TODO
-// 	userservice := service.Userservice{}
-// 	user, errf := userservice.Find(&loginInfo)
-// 	if errf != nil {
-// 		c.AbortWithStatusJSON(401, gin.H{"error": "Not found"})
-// 		return
-// 	}
-
-// 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginInfo.Password))
-// 	if err != nil {
-// 		c.AbortWithStatusJSON(402, gin.H{"error": "Email or password is invalid."})
-// 		return
-// 	}
-
-// 	token, err := user.GetJwtToken()
-// 	if err != nil {
-// 		c.AbortWithStatusJSON(500, gin.H{"error": err.Error()})
-// 		return
-// 	}
-// 	//-------
-// 	c.JSON(200, gin.H{
-// 		"token": token,
-// 	})
-// }
-
-//Profile is to provide current user info
 
 //Signup is for user signup
 func Signup(c *gin.Context) {
@@ -59,20 +28,21 @@ func Signup(c *gin.Context) {
 
 	user := entity.User{}
 	user.Email = body.Email
-	// hash, err := bcrypt.GenerateFromPassword([]byte(info.Password), bcrypt.MinCost)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// 	return
-	// }
+	hash, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.MinCost)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
 
-	// user.Password = string(hash)
-	// user.Name = info.Name
+	user.Password = string(hash)
+	user.Name = body.Name
 	// userservice := service.Userservice{}
-	// err = userservice.Create(&user)
+	res := service.Create(&user)
 	// if err != nil {
 	// 	c.AbortWithStatusJSON(500, gin.H{"error": err.Error()})
 	// } else {
 	// 	c.JSON(200, gin.H{"result": "ok"})
 	// }
-	// return
+	c.JSON(200, gin.H{"result": res})
+	return
 }

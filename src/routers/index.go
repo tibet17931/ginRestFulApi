@@ -1,7 +1,6 @@
 package routers
 
 import (
-	"fmt"
 	"ginRestFulApi/libs/middlewares"
 	"ginRestFulApi/src/controllers"
 
@@ -9,9 +8,7 @@ import (
 )
 
 func setUpRoute(router *gin.Engine) {
-	// authController := new(controllers.he)
 
-	fmt.Println("SET AUTH")
 	public := router.Group("/api/v1")
 	public.POST("/testpost", controllers.TestPost)
 	public.POST("/signup", controllers.Signup)
@@ -31,6 +28,5 @@ func InitRoute() *gin.Engine {
 
 	setUpRoute(router)
 
-	// fmt.Println(router)
 	return router
 }
